@@ -50,14 +50,12 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     private final List<PoolChunkListMetric> chunkListMetrics;
 
     // Metrics for allocations and deallocations
-    private long allocations;
     private long allocationsTiny;
     private long allocationsSmall;
     private long allocationsNormal;
     // We need to use the LongCounter here as this is not guarded via synchronized block.
     private final LongCounter allocationsHuge = PlatformDependent.newLongCounter();
 
-    private long deallocations;
     private long deallocationsTiny;
     private long deallocationsSmall;
     private long deallocationsNormal;
@@ -184,7 +182,6 @@ abstract class PoolArena<T> implements PoolArenaMetric {
                     assert handle >= 0;
                     s.chunk.initBufWithSubpage(buf, handle, reqCapacity);
 
-                    ++allocations;
                     if (tiny) {
                         ++allocationsTiny;
                     } else {
@@ -207,7 +204,6 @@ abstract class PoolArena<T> implements PoolArenaMetric {
     }
 
     private synchronized void allocateNormal(PooledByteBuf<T> buf, int reqCapacity, int normCapacity) {
-        ++allocations;
         ++allocationsNormal;
 
         if (q050.allocate(buf, reqCapacity, normCapacity) || q025.allocate(buf, reqCapacity, normCapacity) ||
@@ -244,7 +240,6 @@ abstract class PoolArena<T> implements PoolArenaMetric {
 
             boolean tinyOrSmall = isTinyOrSmall(normCapacity);
             synchronized (this) {
-                ++deallocations;
                 if (!tinyOrSmall) {
                     ++deallocationsNormal;
                 } else if (isTiny(normCapacity)) {
@@ -371,12 +366,12 @@ abstract class PoolArena<T> implements PoolArenaMetric {
 
     @Override
     public List<PoolSubpageMetric> tinySubpages() {
-        return subPageMetricsList(tinySubpagePools);
+        return subPageMetricList(tinySubpagePools);
     }
 
     @Override
     public List<PoolSubpageMetric> smallSubpages() {
-        return subPageMetricsList(smallSubpagePools);
+        return subPageMetricList(smallSubpagePools);
     }
 
     @Override
@@ -384,7 +379,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
         return chunkListMetrics;
     }
 
-    private static List<PoolSubpageMetric> subPageMetricsList(PoolSubpage<?>[] pages) {
+    private static List<PoolSubpageMetric> subPageMetricList(PoolSubpage<?>[] pages) {
         List<PoolSubpageMetric> metrics = new ArrayList<PoolSubpageMetric>();
         for (int i = 1; i < pages.length; i ++) {
             PoolSubpage<?> head = pages[i];
@@ -405,9 +400,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
 
     @Override
     public long numAllocations() {
-        // We need to add the huge allocations here as these are tracked seperatly to minimize the synchronization
-        // overhead for huge allocations / deallocations.
-        return allocations + allocationsHuge.value();
+        return allocationsTiny + allocationsSmall + allocationsNormal + allocationsHuge.value();
     }
 
     @Override
@@ -427,9 +420,7 @@ abstract class PoolArena<T> implements PoolArenaMetric {
 
     @Override
     public long numDeallocations() {
-        // We need to add the huge deallocations here as these are tracked seperatly to minimize the synchronization
-        // overhead for huge allocations / deallocations.
-        return deallocations + deallocationsHuge.value();
+        return deallocationsTiny + deallocationsSmall + allocationsNormal + deallocationsHuge.value();
     }
 
     @Override

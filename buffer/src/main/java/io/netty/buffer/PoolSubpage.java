@@ -213,7 +213,7 @@ final class PoolSubpage<T> implements PoolSubpageMetric {
     }
 
     @Override
-    public int numMaxElements() {
+    public int maxNumElements() {
         return maxNumElems;
     }
 

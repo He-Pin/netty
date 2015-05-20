@@ -23,7 +23,7 @@ public interface PoolSubpageMetric {
     /**
      * Return the number of maximal elements that can be allocated out of the sub-page.
      */
-    int numMaxElements();
+    int maxNumElements();
 
     /**
      * Return the number of available elements to be allocated.
