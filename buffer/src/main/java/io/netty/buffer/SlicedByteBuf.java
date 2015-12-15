@@ -15,6 +15,8 @@
  */
 package io.netty.buffer;
 
+import io.netty.util.ByteProcessor;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,12 +34,20 @@ import java.nio.channels.ScatteringByteChannel;
  */
 public class SlicedByteBuf extends AbstractDerivedByteBuf {
 
-    private final ByteBuf buffer;
-    private final int adjustment;
-    private final int length;
+    private ByteBuf buffer;
+    private int adjustment;
+    private int length;
 
     public SlicedByteBuf(ByteBuf buffer, int index, int length) {
         super(length);
+        init(buffer, index, length);
+    }
+
+    SlicedByteBuf(int length) {
+        super(length);
+    }
+
+    final void init(ByteBuf buffer, int index, int length) {
         if (index < 0 || index > buffer.capacity() - length) {
             throw new IndexOutOfBoundsException(buffer + ".slice(" + index + ", " + length + ')');
         }
@@ -53,8 +63,9 @@ public class SlicedByteBuf extends AbstractDerivedByteBuf {
             adjustment = index;
         }
         this.length = length;
-
-        writerIndex(length);
+        maxCapacity(length);
+        setIndex(0, length);
+        discardMarks();
     }
 
     @Override
@@ -275,7 +286,7 @@ public class SlicedByteBuf extends AbstractDerivedByteBuf {
     }
 
     @Override
-    public int forEachByte(int index, int length, ByteBufProcessor processor) {
+    public int forEachByte(int index, int length, ByteProcessor processor) {
         int ret = buffer.forEachByte(index + adjustment, length, processor);
         if (ret >= adjustment) {
             return ret - adjustment;
@@ -285,7 +296,7 @@ public class SlicedByteBuf extends AbstractDerivedByteBuf {
     }
 
     @Override
-    public int forEachByteDesc(int index, int length, ByteBufProcessor processor) {
+    public int forEachByteDesc(int index, int length, ByteProcessor processor) {
         int ret = buffer.forEachByteDesc(index + adjustment, length, processor);
         if (ret >= adjustment) {
             return ret - adjustment;

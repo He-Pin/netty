@@ -15,6 +15,8 @@
  */
 package io.netty.buffer;
 
+import io.netty.util.ByteProcessor;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,11 +33,19 @@ import java.nio.channels.ScatteringByteChannel;
  */
 public class DuplicatedByteBuf extends AbstractDerivedByteBuf {
 
-    private final ByteBuf buffer;
+    private ByteBuf buffer;
 
     public DuplicatedByteBuf(ByteBuf buffer) {
         super(buffer.maxCapacity());
+        init(buffer);
+    }
 
+    DuplicatedByteBuf(int maxCapacity) {
+        super(maxCapacity);
+    }
+
+    final void init(ByteBuf buffer) {
+        maxCapacity(buffer.maxCapacity());
         if (buffer instanceof DuplicatedByteBuf) {
             this.buffer = ((DuplicatedByteBuf) buffer).buffer;
         } else {
@@ -43,6 +53,8 @@ public class DuplicatedByteBuf extends AbstractDerivedByteBuf {
         }
 
         setIndex(buffer.readerIndex(), buffer.writerIndex());
+        markReaderIndex();
+        markWriterIndex();
     }
 
     @Override
@@ -293,12 +305,12 @@ public class DuplicatedByteBuf extends AbstractDerivedByteBuf {
     }
 
     @Override
-    public int forEachByte(int index, int length, ByteBufProcessor processor) {
+    public int forEachByte(int index, int length, ByteProcessor processor) {
         return buffer.forEachByte(index, length, processor);
     }
 
     @Override
-    public int forEachByteDesc(int index, int length, ByteBufProcessor processor) {
+    public int forEachByteDesc(int index, int length, ByteProcessor processor) {
         return buffer.forEachByteDesc(index, length, processor);
     }
 }

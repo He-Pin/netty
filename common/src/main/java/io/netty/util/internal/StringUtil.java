@@ -15,21 +15,38 @@
  */
 package io.netty.util.internal;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
+
+import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
 /**
  * String utility class.
  */
 public final class StringUtil {
 
+    public static final String EMPTY_STRING = "";
     public static final String NEWLINE;
 
+    public static final char DOUBLE_QUOTE = '\"';
+    public static final char COMMA = ',';
+    public static final char LINE_FEED = '\n';
+    public static final char CARRIAGE_RETURN = '\r';
+    public static final char TAB = '\t';
+
+    public static final byte UPPER_CASE_TO_LOWER_CASE_ASCII_OFFSET = 'a' - 'A';
     private static final String[] BYTE2HEX_PAD = new String[256];
     private static final String[] BYTE2HEX_NOPAD = new String[256];
-    private static final String EMPTY_STRING = "";
+
+    /**
+     * 2 - Quote character at beginning and end.
+     * 5 - Extra allowance for anticipated escape characters that may be added.
+     */
+    private static final int CSV_NUMBER_ESCAPE_CHARACTERS = 2 + 5;
+    private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
     static {
         // Determine the newline character of the current platform.
@@ -109,6 +126,63 @@ public final class StringUtil {
         }
 
         return res.toArray(new String[res.size()]);
+    }
+
+    /**
+     * Splits the specified {@link String} with the specified delimiter in maxParts maximum parts.
+     * This operation is a simplified and optimized
+     * version of {@link String#split(String, int)}.
+     */
+    public static String[] split(String value, char delim, int maxParts) {
+        final int end = value.length();
+        final List<String> res = new ArrayList<String>();
+
+        int start = 0;
+        int cpt = 1;
+        for (int i = 0; i < end && cpt < maxParts; i ++) {
+            if (value.charAt(i) == delim) {
+                if (start == i) {
+                    res.add(EMPTY_STRING);
+                } else {
+                    res.add(value.substring(start, i));
+                }
+                start = i + 1;
+                cpt++;
+            }
+        }
+
+        if (start == 0) { // If no delimiter was found in the value
+            res.add(value);
+        } else {
+            if (start != end) {
+                // Add the last element if it's not empty.
+                res.add(value.substring(start, end));
+            } else {
+                // Truncate trailing empty elements.
+                for (int i = res.size() - 1; i >= 0; i --) {
+                    if (res.get(i).isEmpty()) {
+                        res.remove(i);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+
+        return res.toArray(new String[res.size()]);
+    }
+
+    /**
+     * Get the item after one char delim if the delim is found (else null).
+     * This operation is a simplified and optimized
+     * version of {@link String#split(String, int)}.
+     */
+    public static String substringAfter(String value, char delim) {
+        int pos = value.indexOf(delim);
+        if (pos >= 0) {
+            return value.substring(pos + 1);
+        }
+        return null;
     }
 
     /**
@@ -245,16 +319,64 @@ public final class StringUtil {
      * with anonymous classes.
      */
     public static String simpleClassName(Class<?> clazz) {
-        if (clazz == null) {
-            return "null_class";
+        String className = ObjectUtil.checkNotNull(clazz, "clazz").getName();
+        final int lastDotIdx = className.lastIndexOf(PACKAGE_SEPARATOR_CHAR);
+        if (lastDotIdx > -1) {
+            return className.substring(lastDotIdx + 1);
         }
+        return className;
+    }
 
-        Package pkg = clazz.getPackage();
-        if (pkg != null) {
-            return clazz.getName().substring(pkg.getName().length() + 1);
-        } else {
-            return clazz.getName();
+    /**
+     * Escapes the specified value, if necessary according to
+     * <a href="https://tools.ietf.org/html/rfc4180#section-2">RFC-4180</a>.
+     *
+     * @param value The value which will be escaped according to
+     *              <a href="https://tools.ietf.org/html/rfc4180#section-2">RFC-4180</a>
+     * @return {@link CharSequence} the escaped value if necessary, or the value unchanged
+     */
+    public static CharSequence escapeCsv(CharSequence value) {
+        int length = checkNotNull(value, "value").length();
+        if (length == 0) {
+            return value;
         }
+        int last = length - 1;
+        boolean quoted = isDoubleQuote(value.charAt(0)) && isDoubleQuote(value.charAt(last)) && length != 1;
+        boolean foundSpecialCharacter = false;
+        boolean escapedDoubleQuote = false;
+        StringBuilder escaped = new StringBuilder(length + CSV_NUMBER_ESCAPE_CHARACTERS).append(DOUBLE_QUOTE);
+        for (int i = 0; i < length; i++) {
+            char current = value.charAt(i);
+            switch (current) {
+                case DOUBLE_QUOTE:
+                    if (i == 0 || i == last) {
+                        if (!quoted) {
+                            escaped.append(DOUBLE_QUOTE);
+                        } else {
+                            continue;
+                        }
+                    } else {
+                        boolean isNextCharDoubleQuote = isDoubleQuote(value.charAt(i + 1));
+                        if (!isDoubleQuote(value.charAt(i - 1)) &&
+                                (!isNextCharDoubleQuote || i + 1 == last)) {
+                            escaped.append(DOUBLE_QUOTE);
+                            escapedDoubleQuote = true;
+                        }
+                        break;
+                    }
+                case LINE_FEED:
+                case CARRIAGE_RETURN:
+                case COMMA:
+                    foundSpecialCharacter = true;
+            }
+            escaped.append(current);
+        }
+        return escapedDoubleQuote || foundSpecialCharacter && !quoted ?
+                escaped.append(DOUBLE_QUOTE) : value;
+    }
+
+    private static boolean isDoubleQuote(char c) {
+        return c == DOUBLE_QUOTE;
     }
 
     private StringUtil() {

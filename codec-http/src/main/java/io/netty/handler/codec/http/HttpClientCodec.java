@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @see HttpServerCodec
  */
-public final class HttpClientCodec extends ChannelHandlerAppender {
+public final class HttpClientCodec extends ChannelHandlerAppender implements HttpClientUpgradeHandler.SourceCodec {
 
     /** A queue that is used for correlating a request and a response. */
     private final Queue<HttpMethod> queue = new ArrayDeque<HttpMethod>();
@@ -86,7 +86,27 @@ public final class HttpClientCodec extends ChannelHandlerAppender {
         this.failOnMissingResponse = failOnMissingResponse;
     }
 
-    private Decoder decoder() {
+    /**
+     * Upgrades to another protocol from HTTP. Removes the {@link Decoder} and {@link Encoder} from
+     * the pipeline.
+     */
+    @Override
+    public void upgradeFrom(ChannelHandlerContext ctx) {
+        ctx.pipeline().remove(Decoder.class);
+        ctx.pipeline().remove(Encoder.class);
+    }
+
+    /**
+     * Returns the encoder of this codec.
+     */
+    public HttpRequestEncoder encoder() {
+        return handlerAt(1);
+    }
+
+    /**
+     * Returns the decoder of this codec.
+     */
+    public HttpResponseDecoder decoder() {
         return handlerAt(0);
     }
 

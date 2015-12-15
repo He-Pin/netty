@@ -19,13 +19,19 @@ import io.netty.handler.codec.http.HttpHeaders;
 
 
 /**
+ * @deprecated Use {@link RtspHeaderNames} or {@link RtspHeaderValues} instead.
+
  * Standard RTSP header names and values.
  */
+@Deprecated
 public final class RtspHeaders {
 
     /**
+     * @deprecated Use {@link RtspHeaderNames} instead.
+     *
      * Standard RTSP header names.
      */
+    @Deprecated
     public static final class Names {
         /**
          * {@code "Accept"}
@@ -209,8 +215,11 @@ public final class RtspHeaders {
     }
 
     /**
+     * @deprecated Use {@link RtspHeaderValues} instead.
+     *
      * Standard RTSP header values.
      */
+    @Deprecated
     public static final class Values {
         /**
          * {@code "append"}
@@ -247,7 +256,7 @@ public final class RtspHeaders {
         /**
          * {@code "100-continue"}
          */
-        public static final String CONTINUE =  HttpHeaders.Values.CONTINUE;
+        public static final String CONTINUE = HttpHeaders.Values.CONTINUE;
         /**
          * {@code "deflate"}
          */

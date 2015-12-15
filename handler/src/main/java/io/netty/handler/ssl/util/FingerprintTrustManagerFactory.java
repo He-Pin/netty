@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  * An {@link TrustManagerFactory} that trusts an X.509 certificate whose SHA1 checksum matches.
  * <p>
  * <strong>NOTE:</strong>
- * Never use this {@link TrustManagerFactory} in production unless you are not sure what you are exactly doing with it.
+ * Never use this {@link TrustManagerFactory} in production unless you are sure exactly what you are doing with it.
  * </p><p>
  * The SHA1 checksum of an X.509 certificate is calculated from its DER encoded format.  You can get the fingerprint of
  * an X.509 certificate using the {@code openssl} command.  For example:
@@ -190,6 +190,7 @@ public final class FingerprintTrustManagerFactory extends SimpleTrustManagerFact
                 int strIdx = i << 1;
                 farr[i] = (byte) Integer.parseInt(f.substring(strIdx, strIdx + 2), 16);
             }
+            list.add(farr);
         }
 
         return list.toArray(new byte[list.size()][]);

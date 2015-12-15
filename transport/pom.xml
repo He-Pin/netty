@@ -20,7 +20,7 @@
   <parent>
     <groupId>io.netty</groupId>
     <artifactId>netty-parent</artifactId>
-    <version>4.1.0.Beta4-SNAPSHOT</version>
+    <version>4.1.0.Beta6-SNAPSHOT</version>
   </parent>
 
   <artifactId>netty-transport</artifactId>
@@ -32,6 +32,11 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>netty-buffer</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>netty-resolver</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

@@ -18,7 +18,7 @@ package io.netty.example.http.snoop;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpContent;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderUtil;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.LastHttpContent;
@@ -36,15 +36,15 @@ public class HttpSnoopClientHandler extends SimpleChannelInboundHandler<HttpObje
             System.err.println();
 
             if (!response.headers().isEmpty()) {
-                for (String name: response.headers().names()) {
-                    for (String value: response.headers().getAll(name)) {
+                for (CharSequence name: response.headers().names()) {
+                    for (CharSequence value: response.headers().getAll(name)) {
                         System.err.println("HEADER: " + name + " = " + value);
                     }
                 }
                 System.err.println();
             }
 
-            if (HttpHeaders.isTransferEncodingChunked(response)) {
+            if (HttpHeaderUtil.isTransferEncodingChunked(response)) {
                 System.err.println("CHUNKED CONTENT {");
             } else {
                 System.err.println("CONTENT {");

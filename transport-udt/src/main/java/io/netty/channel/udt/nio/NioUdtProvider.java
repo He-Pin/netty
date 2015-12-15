@@ -23,11 +23,11 @@ import com.barchart.udt.nio.RendezvousChannelUDT;
 import com.barchart.udt.nio.SelectorProviderUDT;
 import com.barchart.udt.nio.ServerSocketChannelUDT;
 import com.barchart.udt.nio.SocketChannelUDT;
-import io.netty.bootstrap.ChannelFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
-import io.netty.channel.udt.UdtServerChannel;
+import io.netty.channel.ChannelFactory;
 import io.netty.channel.udt.UdtChannel;
+import io.netty.channel.udt.UdtServerChannel;
 
 import java.io.IOException;
 import java.nio.channels.spi.SelectorProvider;
@@ -106,22 +106,24 @@ public final class NioUdtProvider<T extends UdtChannel> implements ChannelFactor
         if (channel instanceof NioUdtByteAcceptorChannel) {
             return ((NioUdtByteAcceptorChannel) channel).javaChannel();
         }
-        if (channel instanceof NioUdtByteConnectorChannel) {
-            return ((NioUdtByteConnectorChannel) channel).javaChannel();
-        }
         if (channel instanceof NioUdtByteRendezvousChannel) {
             return ((NioUdtByteRendezvousChannel) channel).javaChannel();
         }
+        if (channel instanceof NioUdtByteConnectorChannel) {
+            return ((NioUdtByteConnectorChannel) channel).javaChannel();
+        }
+
         // message
         if (channel instanceof NioUdtMessageAcceptorChannel) {
             return ((NioUdtMessageAcceptorChannel) channel).javaChannel();
         }
-        if (channel instanceof NioUdtMessageConnectorChannel) {
-            return ((NioUdtMessageConnectorChannel) channel).javaChannel();
-        }
         if (channel instanceof NioUdtMessageRendezvousChannel) {
             return ((NioUdtMessageRendezvousChannel) channel).javaChannel();
         }
+        if (channel instanceof NioUdtMessageConnectorChannel) {
+            return ((NioUdtMessageConnectorChannel) channel).javaChannel();
+        }
+
         return null;
     }
 
