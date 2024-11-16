@@ -1462,6 +1462,12 @@
                   <new>method io.netty.channel.ServerChannel io.netty.channel.socket.nio.NioDomainSocketChannel::parent()</new>
                   <justification>Old return type made no sense, the parent channel is a NioServerDomainSocketChannel which does not implement ServerSocketChannel. The method always threw a ClassCastException (except for null).</justification>
                 </item>
+                <item>
+                  <ignore>true</ignore>
+                  <code>java.method.addedToInterface</code>
+                  <classQualifiedName>io.netty.handler.codec.spdy.SpdyFrameDecoderDelegate</classQualifiedName>
+                  <methodName>readUnknownFrame</methodName>
+                </item>
               </differences>
             </revapi.differences>
           </analysisConfiguration>
@@ -1495,6 +1501,7 @@
               <exclude>io.netty.util.internal.shaded</exclude>
               <exclude>io.netty.buffer.AdaptivePoolingAllocator$ChunkAllocator</exclude>
               <exclude>io.netty.channel.socket.nio.NioDomainSocketChannel#parent()</exclude>
+              <exclude>io.netty.handler.codec.spdy.SpdyFrameDecoderDelegate#readUnknownFrame()</exclude>
             </excludes>
             <overrideCompatibilityChangeParameters>
               <overrideCompatibilityChangeParameter>
@@ -1502,6 +1509,11 @@
                 <sourceCompatible>true</sourceCompatible>
                 <binaryCompatible>true</binaryCompatible>
                 <semanticVersionLevel>PATCH</semanticVersionLevel>
+              </overrideCompatibilityChangeParameter>
+              <overrideCompatibilityChangeParameter>
+                <compatibilityChange>METHOD_ADDED_TO_INTERFACE</compatibilityChange>
+                <binaryCompatible>true</binaryCompatible>
+                <sourceCompatible>true</sourceCompatible>
               </overrideCompatibilityChangeParameter>
             </overrideCompatibilityChangeParameters>
           </parameter>
