@@ -93,6 +93,15 @@ public interface SpdyFrameDecoderDelegate {
     void readHeaderBlockEnd();
 
     /**
+     * Called when an unknown frame is received.
+     *
+     * @param frameType the frame type from the spdy header.
+     * @param flags the flags in the frame header.
+     * @param payload the payload of the frame.
+     */
+    void readUnknownFrame(int frameType, byte flags, ByteBuf payload);
+
+    /**
      * Called when an unrecoverable session error has occurred.
      */
     void readFrameError(String message);
